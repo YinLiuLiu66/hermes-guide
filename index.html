@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Agent 使用指南</title>
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: #1a1a2e; background: #f8f9fc; line-height: 1.7; font-size: 15px;
+}
+a { color: #4361ee; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ===== Layout ===== */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+  background: #1a1a2e; color: #ccc; overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column;
+}
+.sidebar-header {
+  padding: 24px 20px 16px; border-bottom: 1px solid #2a2a4a;
+}
+.sidebar-header h1 { color: #fff; font-size: 20px; font-weight: 700; }
+.sidebar-header p { color: #8888aa; font-size: 12px; margin-top: 4px; }
+.sidebar-nav { flex: 1; padding: 12px 0; }
+.nav-section { padding: 8px 20px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666688; font-weight: 600; }
+.nav-link {
+  display: block; padding: 8px 20px 8px 24px; color: #aaa; font-size: 14px;
+  border-left: 3px solid transparent; transition: all .15s; cursor: pointer;
+}
+.nav-link:hover { color: #fff; background: rgba(255,255,255,.05); text-decoration: none; }
+.nav-link.active { color: #4cc9f0; border-left-color: #4cc9f0; background: rgba(76,201,240,.08); }
+
+.main { margin-left: 260px; min-height: 100vh; }
+.content { max-width: 860px; margin: 0 auto; padding: 40px 48px 80px; }
+
+/* ===== Hero ===== */
+.hero {
+  text-align: center; padding: 60px 0 40px;
+}
+.hero h1 { font-size: 36px; font-weight: 800; color: #1a1a2e; }
+.hero h1 span { color: #4361ee; }
+.hero .subtitle { font-size: 17px; color: #555; margin-top: 12px; max-width: 560px; margin-inline: auto; }
+.hero .quick-install {
+  margin-top: 28px; display: inline-block; background: #1e1e2e; color: #a6e3a1;
+  padding: 14px 28px; border-radius: 8px; font-family: "Fira Code", "Cascadia Code", monospace; font-size: 14px;
+  position: relative; cursor: pointer;
+}
+.hero .quick-install .copy-tip { position: absolute; right: -70px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #888; }
+
+/* ===== Feature Cards ===== */
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
+.feature-card {
+  background: #fff; border: 1px solid #e8e8f0; border-radius: 10px; padding: 20px;
+  transition: box-shadow .2s;
+}
+.feature-card:hover { box-shadow: 0 4px 20px rgba(67,97,238,.1); }
+.feature-card .icon { font-size: 28px; margin-bottom: 8px; }
+.feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.feature-card p { font-size: 13px; color: #666; }
+
+/* ===== Section Headers ===== */
+.page-section { display: none; }
+.page-section.active { display: block; }
+.page-section h2 {
+  font-size: 26px; font-weight: 700; padding-bottom: 10px;
+  border-bottom: 2px solid #4361ee; margin-bottom: 24px; margin-top: 48px;
+}
+.page-section h2:first-child { margin-top: 0; }
+.page-section h3 { font-size: 19px; font-weight: 600; margin: 28px 0 12px; color: #2a2a4e; }
+.page-section h4 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; color: #3a3a5e; }
+.page-section p { margin-bottom: 12px; }
+.page-section ul, .page-section ol { margin: 0 0 16px 24px; }
+.page-section li { margin-bottom: 6px; }
+
+/* ===== Code Blocks ===== */
+.code-block {
+  position: relative; background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 16px 20px; margin: 12px 0 20px; font-family: "Fira Code", "Cascadia Code", monospace;
+  font-size: 13.5px; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+}
+.code-block .copy-btn {
+  position: absolute; top: 8px; right: 8px; background: #313244; color: #a6adc8;
+  border: none; border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+  transition: all .15s;
+}
+.code-block .copy-btn:hover { background: #45475a; color: #fff; }
+.code-block .copy-btn.copied { background: #a6e3a1; color: #1e1e2e; }
+.cmd { color: #a6e3a1; }
+.comment { color: #6c7086; }
+.flag { color: #89b4fa; }
+.string { color: #f9e2af; }
+
+/* ===== Tables ===== */
+.doc-table {
+  width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 14px;
+}
+.doc-table th {
+  background: #eef0f8; text-align: left; padding: 10px 14px; font-weight: 600;
+  border-bottom: 2px solid #d0d4e4;
+}
+.doc-table td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+.doc-table code {
+  background: #f0f2f8; padding: 2px 6px; border-radius: 4px;
+  font-family: "Fira Code", monospace; font-size: 13px;
+}
+.doc-table tr:hover td { background: #f8f9fc; }
+
+/* ===== Info Boxes ===== */
+.info-box {
+  border-left: 4px solid #4361ee; background: #eef1ff; padding: 14px 18px;
+  border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 14px;
+}
+.info-box.warn { border-left-color: #f59e0b; background: #fffbeb; }
+.info-box.tip { border-left-color: #10b981; background: #ecfdf5; }
+
+/* ===== Command Generator ===== */
+.gen-category {
+  background: #fff; border: 1px solid #e0e0ee; border-radius: 10px;
+  margin-bottom: 16px; overflow: hidden;
+}
+.gen-category-header {
+  display: flex; align-items: center; padding: 16px 20px; cursor: pointer;
+  font-weight: 600; font-size: 16px; gap: 10px; user-select: none;
+  transition: background .15s;
+}
+.gen-category-header:hover { background: #f8f9fc; }
+.gen-category-header .arrow { transition: transform .2s; font-size: 12px; color: #888; }
+.gen-category.open .arrow { transform: rotate(90deg); }
+.gen-category-header .cat-icon { font-size: 22px; }
+.gen-category-body { display: none; padding: 0 20px 16px; }
+.gen-category.open .gen-category-body { display: block; }
+
+.scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.scenario-btn {
+  background: #f4f5fb; border: 1px solid #dde0f0; border-radius: 8px;
+  padding: 12px 16px; cursor: pointer; transition: all .15s; text-align: left;
+}
+.scenario-btn:hover { border-color: #4361ee; background: #eef1ff; }
+.scenario-btn.selected { border-color: #4361ee; background: #e0e7ff; }
+.scenario-btn h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.scenario-btn p { font-size: 12px; color: #666; margin: 0; }
+
+.scenario-result {
+  margin-top: 14px; background: #f8f9fc; border-radius: 8px; padding: 16px 20px;
+  display: none;
+}
+.scenario-result.show { display: block; }
+.scenario-result h4 { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #2a2a4e; }
+.scenario-result .step { margin-bottom: 14px; }
+.scenario-result .step-label { font-size: 13px; font-weight: 600; color: #4361ee; margin-bottom: 4px; }
+.scenario-result .step-desc { font-size: 13px; color: #555; margin-bottom: 6px; }
+
+/* ===== Search/filter ===== */
+.gen-filter {
+  width: 100%; padding: 10px 16px; border: 1px solid #dde0f0; border-radius: 8px;
+  font-size: 14px; margin-bottom: 16px; outline: none;
+}
+.gen-filter:focus { border-color: #4361ee; box-shadow: 0 0 0 3px rgba(67,97,238,.1); }
+
+/* ===== Steps ===== */
+.step-list { counter-reset: step; list-style: none; padding: 0; margin: 0 0 20px; }
+.step-list li {
+  counter-increment: step; padding: 12px 16px 12px 52px; position: relative;
+  background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px;
+}
+.step-list li::before {
+  content: counter(step); position: absolute; left: 14px; top: 12px;
+  width: 26px; height: 26px; background: #4361ee; color: #fff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+}
+
+/* ===== Mobile ===== */
+.menu-toggle {
+  display: none; position: fixed; top: 12px; left: 12px; z-index: 200;
+  background: #1a1a2e; color: #fff; border: none; border-radius: 6px;
+  padding: 8px 12px; font-size: 18px; cursor: pointer;
+}
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform .25s; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .content { padding: 60px 20px 40px; }
+  .menu-toggle { display: block; }
+  .features { grid-template-columns: 1fr; }
+  .scenario-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+<!-- ===== Sidebar ===== -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>Ⓗ Hermes Agent</h1>
+    <p>使用指南 v0.15</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">入门</div>
+    <a class="nav-link active" data-page="home" onclick="showPage('home')">首页</a>
+    <a class="nav-link" data-page="getting-started" onclick="showPage('getting-started')">快速开始</a>
+    <a class="nav-link" data-page="basic-usage" onclick="showPage('basic-usage')">基础使用</a>
+
+    <div class="nav-section">核心功能</div>
+    <a class="nav-link" data-page="command-generator" onclick="showPage('command-generator')">场景命令生成器</a>
+    <a class="nav-link" data-page="skills" onclick="showPage('skills')">Skills 系统</a>
+    <a class="nav-link" data-page="config" onclick="showPage('config')">配置管理</a>
+
+    <div class="nav-section">进阶</div>
+    <a class="nav-link" data-page="gateway" onclick="showPage('gateway')">消息平台</a>
+    <a class="nav-link" data-page="advanced" onclick="showPage('advanced')">进阶功能</a>
+    <a class="nav-link" data-page="faq" onclick="showPage('faq')">常见问题</a>
+  </nav>
+</aside>
+
+<!-- ===== Main Content ===== -->
+<div class="main">
+<div class="content">
+
+<!-- ==================== HOME ==================== -->
+<section class="page-section active" id="page-home">
+  <div class="hero">
+    <h1><span>Hermes Agent</span> 使用指南</h1>
+    <p class="subtitle">Nous Research 开源 AI 智能体框架 — 在终端、消息平台和 IDE 中运行，支持 20+ 模型提供商，具备持久记忆和自我学习能力。</p>
+    <div class="quick-install" onclick="copyText(this, 'curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash')">
+      $ curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+      <span class="copy-tip">点击复制</span>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <div class="icon">💻</div>
+      <h3>多平台运行</h3>
+      <p>支持 Linux、macOS、Windows 和 WSL，在终端中直接交互。</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🧠</div>
+      <h3>持久记忆</h3>
+      <p>跨会话记住你的偏好、环境和经验，无需重复说明。</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📚</div>
+      <h3>Skills 自我学习</h3>
+      <p>从经验中学习，将复杂流程保存为可复用的技能文档。</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔌</div>
+      <h3>20+ 模型提供商</h3>
+      <p>OpenRouter、Anthropic、DeepSeek、Gemini、本地模型等自由切换。</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">💬</div>
+      <h3>消息网关</h3>
+      <p>同一智能体运行在 Telegram、Discord、飞书、微信等 15+ 平台。</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔧</div>
+      <h3>高度可扩展</h3>
+      <p>插件、MCP 服务器、定时任务、Webhook，完整 Python 生态。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== GETTING STARTED ==================== -->
+<section class="page-section" id="page-getting-started">
+  <h2>快速开始</h2>
+
+  <h3>系统要求</h3>
+  <table class="doc-table">
+    <tr><th>项目</th><th>要求</th></tr>
+    <tr><td>操作系统</td><td>Linux、macOS、Windows（原生或 WSL）</td></tr>
+    <tr><td>Python</td><td>3.10+</td></tr>
+    <tr><td>Git</td><td>安装过程需要</td></tr>
+    <tr><td>Node.js</td><td>可选，部分 MCP Server 需要</td></tr>
+  </table>
+
+  <h3>安装</h3>
+
+  <h4>Linux / macOS / WSL</h4>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 一键安装</span>
+<span class="cmd">curl</span> -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | <span class="cmd">bash</span></div>
+
+  <h4>Windows（PowerShell）</h4>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 在 PowerShell 中运行</span>
+<span class="cmd">irm</span> https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.ps1 | <span class="cmd">iex</span></div>
+
+  <h3>首次配置</h3>
+  <ol class="step-list">
+    <li>
+      <strong>运行设置向导</strong>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> setup</div>
+      <p>交互式引导你配置模型、终端、工具等。也可以分步执行：</p>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> setup model      <span class="comment"># 配置模型和提供商</span>
+<span class="cmd">hermes</span> setup terminal   <span class="comment"># 配置终端后端</span>
+<span class="cmd">hermes</span> setup tools      <span class="comment"># 配置工具集</span></div>
+    </li>
+    <li>
+      <strong>选择模型</strong>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> model   <span class="comment"># 交互式模型/提供商选择器</span></div>
+      <p>支持 OpenRouter、Anthropic、Google Gemini、DeepSeek 等。需要对应提供商的 API Key。</p>
+    </li>
+    <li>
+      <strong>添加 API 密钥</strong>
+      <p>编辑 <code>~/.hermes/.env</code> 文件，添加你的 API Key：</p>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 至少配置一个提供商的密钥</span>
+OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
+<span class="comment"># 或者</span>
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxx
+<span class="comment"># 或者</span>
+GOOGLE_API_KEY=AIzaxxxxxxxxxx</div>
+    </li>
+    <li>
+      <strong>健康检查</strong>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> doctor          <span class="comment"># 检查配置和依赖</span>
+<span class="cmd">hermes</span> doctor <span class="flag">--fix</span>     <span class="comment"># 自动修复可修复的问题</span></div>
+    </li>
+  </ol>
+
+  <h3>开始使用</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span>                    <span class="comment"># 启动交互式对话</span>
+<span class="cmd">hermes</span> chat <span class="flag">-q</span> <span class="string">"你好"</span>     <span class="comment"># 单次提问</span></div>
+
+  <div class="info-box tip">
+    <strong>提示：</strong>中国用户如果 GitHub 访问受限，安装时可能需要配置代理或使用镜像。安装脚本支持通过环境变量设置代理：<code>https_proxy=http://127.0.0.1:7890 bash install.sh</code>
+  </div>
+</section>
+
+<!-- ==================== BASIC USAGE ==================== -->
+<section class="page-section" id="page-basic-usage">
+  <h2>基础使用</h2>
+
+  <h3>交互式对话</h3>
+  <p>直接运行 <code>hermes</code> 即可进入交互式对话。Hermes 可以使用各种工具：执行命令、读写文件、搜索网页、分析图片等。</p>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span>                     <span class="comment"># 启动交互式对话</span>
+<span class="cmd">hermes</span> <span class="flag">-m</span> anthropic/claude-sonnet-4  <span class="comment"># 指定模型启动</span>
+<span class="cmd">hermes</span> <span class="flag">--yolo</span>                <span class="comment"># 跳过危险命令确认（谨慎使用）</span></div>
+
+  <h3>单次查询</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 非交互模式，适合脚本和快速查询</span>
+<span class="cmd">hermes</span> chat <span class="flag">-q</span> <span class="string">"Python 如何读取 CSV 文件？"</span>
+<span class="cmd">hermes</span> chat <span class="flag">-q</span> <span class="string">"总结当前目录的 git 状态"</span> <span class="flag">-t</span> terminal,file</div>
+
+  <h3>会话管理</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 继续最近的会话</span>
+<span class="cmd">hermes</span> <span class="flag">--continue</span>
+<span class="comment"># 恢复指定会话</span>
+<span class="cmd">hermes</span> <span class="flag">--resume</span> SESSION_ID
+<span class="comment"># 列出最近会话</span>
+<span class="cmd">hermes</span> sessions list
+<span class="comment"># 交互式选择会话</span>
+<span class="cmd">hermes</span> sessions browse
+<span class="comment"># 导出会话</span>
+<span class="cmd">hermes</span> sessions export output.jsonl</div>
+
+  <h3>常用斜杠命令</h3>
+  <p>在交互式对话中输入以下命令：</p>
+  <table class="doc-table">
+    <tr><th>命令</th><th>说明</th></tr>
+    <tr><td><code>/help</code></td><td>显示所有可用命令</td></tr>
+    <tr><td><code>/new</code></td><td>开始新会话</td></tr>
+    <tr><td><code>/model [name]</code></td><td>查看或切换模型</td></tr>
+    <tr><td><code>/skill &lt;name&gt;</code></td><td>加载指定 Skill</td></tr>
+    <tr><td><code>/tools</code></td><td>管理工具集</td></tr>
+    <tr><td><code>/config</code></td><td>查看当前配置</td></tr>
+    <tr><td><code>/save</code></td><td>保存对话到文件</td></tr>
+    <tr><td><code>/copy</code></td><td>复制最后的回复到剪贴板</td></tr>
+    <tr><td><code>/clear</code></td><td>清屏并开始新会话</td></tr>
+    <tr><td><code>/retry</code></td><td>重新发送最后一条消息</td></tr>
+    <tr><td><code>/undo</code></td><td>撤销最后一轮对话</td></tr>
+    <tr><td><code>/compress</code></td><td>手动压缩上下文</td></tr>
+    <tr><td><code>/quit</code></td><td>退出</td></tr>
+  </table>
+
+  <h3>工作目录</h3>
+  <p>Hermes 默认在当前目录工作。你可以指定工作目录：</p>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">cd</span> ~/my-project
+<span class="cmd">hermes</span>              <span class="comment"># 在 my-project 目录下工作</span></div>
+  <p>这样 Hermes 的文件操作、Git 操作等都会在此目录下进行。</p>
+</section>
+
+<!-- ==================== COMMAND GENERATOR ==================== -->
+<section class="page-section" id="page-command-generator">
+  <h2>场景命令生成器</h2>
+  <p>选择你想做的事情，查看对应的命令和操作步骤。</p>
+  <input class="gen-filter" type="text" placeholder="🔍 搜索场景（如：模型、Profile、飞书…）" oninput="filterScenarios(this.value)">
+
+  <div id="gen-categories">
+
+    <!-- 模型管理 -->
+    <div class="gen-category open" data-cat="模型管理">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">🤖</span>
+        <span>模型管理</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'switch-model')">
+            <h4>切换默认模型</h4>
+            <p>更改 Hermes 使用的 AI 模型</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'switch-provider')">
+            <h4>切换提供商</h4>
+            <p>从 OpenRouter 切换到 Anthropic、DeepSeek 等</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'local-model')">
+            <h4>使用本地模型</h4>
+            <p>连接 Ollama 等本地模型服务</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'add-apikey')">
+            <h4>添加 API Key</h4>
+            <p>配置提供商的 API 密钥</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-switch-model">
+          <h4>切换默认模型</h4>
+          <div class="step">
+            <div class="step-label">方式一：交互式选择（推荐）</div>
+            <div class="step-desc">运行模型选择器，从列表中选择：</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> model</div>
+          </div>
+          <div class="step">
+            <div class="step-label">方式二：直接设置</div>
+            <div class="step-desc">已知模型名称时直接配置：</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> config set model.default anthropic/claude-sonnet-4
+<span class="comment"># 或者在对话中切换（仅当前会话）</span>
+/model deepseek/deepseek-chat</div>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-switch-provider">
+          <h4>切换模型提供商</h4>
+          <div class="step">
+            <div class="step-label">设置提供商</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 切换到 Anthropic</span>
+<span class="cmd">hermes</span> config set model.provider anthropic
+<span class="comment"># 切换到 DeepSeek</span>
+<span class="cmd">hermes</span> config set model.provider deepseek
+<span class="comment"># 切换到 Google Gemini</span>
+<span class="cmd">hermes</span> config set model.provider google</div>
+          </div>
+          <div class="step">
+            <div class="step-label">重启生效</div>
+            <div class="step-desc">CLI 中退出重新运行 <code>hermes</code>，Gateway 中执行 <code>/restart</code>。</div>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-local-model">
+          <h4>使用本地模型（Ollama）</h4>
+          <div class="step">
+            <div class="step-label">1. 确保 Ollama 运行中</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">ollama</span> serve                <span class="comment"># 启动 Ollama（如果未运行）</span>
+<span class="cmd">ollama</span> pull llama3           <span class="comment"># 下载模型</span></div>
+          </div>
+          <div class="step">
+            <div class="step-label">2. 配置 Hermes</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> config set model.base_url http://localhost:11434/v1
+<span class="cmd">hermes</span> config set model.default llama3
+<span class="cmd">hermes</span> config set model.api_key ollama</div>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-add-apikey">
+          <h4>添加 API Key</h4>
+          <div class="step">
+            <div class="step-label">方式一：编辑 .env 文件</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 编辑 ~/.hermes/.env，添加对应变量：</span>
+OPENROUTER_API_KEY=sk-or-v1-xxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxx
+GOOGLE_API_KEY=AIzaxxxxx
+DEEPSEEK_API_KEY=sk-xxxxx
+GROQ_API_KEY=gsk_xxxxx</div>
+          </div>
+          <div class="step">
+            <div class="step-label">方式二：交互式管理</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> auth                 <span class="comment"># 交互式凭证管理</span>
+<span class="cmd">hermes</span> auth add openrouter   <span class="comment"># 添加指定提供商</span>
+<span class="cmd">hermes</span> auth list             <span class="comment"># 查看已配置的凭证</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile 管理 -->
+    <div class="gen-category" data-cat="Profile 管理">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">👤</span>
+        <span>Profile 管理</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'create-profile')">
+            <h4>创建新 Profile</h4>
+            <p>隔离的配置、技能和记忆空间</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'switch-profile')">
+            <h4>切换 Profile</h4>
+            <p>在不同 Profile 间切换</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'list-profiles')">
+            <h4>查看所有 Profile</h4>
+            <p>列出和查看 Profile 详情</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'export-profile')">
+            <h4>导出/导入 Profile</h4>
+            <p>备份或迁移 Profile</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-create-profile">
+          <h4>创建新 Profile</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 创建空白 Profile</span>
+<span class="cmd">hermes</span> profile create work
+<span class="comment"># 从当前 Profile 克隆配置</span>
+<span class="cmd">hermes</span> profile create work <span class="flag">--clone</span>
+<span class="comment"># 克隆包括技能和记忆</span>
+<span class="cmd">hermes</span> profile create work <span class="flag">--clone-all</span></div>
+          <div class="info-box">每个 Profile 拥有独立的配置、技能、插件、记忆和会话。适合为不同工作场景（如开发、写作、运维）创建不同环境。</div>
+        </div>
+        <div class="scenario-result" id="result-switch-profile">
+          <h4>切换 Profile</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 设置默认 Profile（持久生效）</span>
+<span class="cmd">hermes</span> profile use work
+<span class="comment"># 临时使用指定 Profile 启动</span>
+<span class="cmd">hermes</span> <span class="flag">-p</span> work</div>
+        </div>
+        <div class="scenario-result" id="result-list-profiles">
+          <h4>查看所有 Profile</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> profile list           <span class="comment"># 列出所有 Profile</span>
+<span class="cmd">hermes</span> profile show work      <span class="comment"># 查看详情</span>
+<span class="cmd">hermes</span> profile describe work  <span class="comment"># 查看/设置描述</span></div>
+        </div>
+        <div class="scenario-result" id="result-export-profile">
+          <h4>导出/导入 Profile</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 导出为压缩包</span>
+<span class="cmd">hermes</span> profile export work
+<span class="comment"># 导入</span>
+<span class="cmd">hermes</span> profile import work-profile.tar.gz</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills 管理 -->
+    <div class="gen-category" data-cat="Skills 管理">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">📚</span>
+        <span>Skills 管理</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'browse-skills')">
+            <h4>浏览和搜索 Skills</h4>
+            <p>发现可用的技能</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'install-skill')">
+            <h4>安装 Skill</h4>
+            <p>从仓库或 URL 安装技能</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'manage-skills')">
+            <h4>更新和卸载</h4>
+            <p>维护已安装的技能</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'skill-config')">
+            <h4>技能配置</h4>
+            <p>启用/禁用特定技能</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-browse-skills">
+          <h4>浏览和搜索 Skills</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> skills browse          <span class="comment"># 浏览所有可用技能（分页）</span>
+<span class="cmd">hermes</span> skills search <span class="string">"python"</span> <span class="comment"># 搜索关键词</span>
+<span class="cmd">hermes</span> skills list            <span class="comment"># 查看已安装的技能</span>
+<span class="cmd">hermes</span> skills inspect <span class="flag">&lt;id&gt;</span>    <span class="comment"># 预览技能内容</span></div>
+        </div>
+        <div class="scenario-result" id="result-install-skill">
+          <h4>安装 Skill</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 从仓库安装</span>
+<span class="cmd">hermes</span> skills install <span class="flag">&lt;skill-id&gt;</span>
+<span class="comment"># 从 URL 安装</span>
+<span class="cmd">hermes</span> skills install https://example.com/SKILL.md
+<span class="comment"># 添加 GitHub 仓库作为技能源</span>
+<span class="cmd">hermes</span> skills tap add owner/repo</div>
+        </div>
+        <div class="scenario-result" id="result-manage-skills">
+          <h4>更新和卸载</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 检查更新</span>
+<span class="cmd">hermes</span> skills check
+<span class="comment"># 更新所有过时技能</span>
+<span class="cmd">hermes</span> skills update
+<span class="comment"># 卸载技能</span>
+<span class="cmd">hermes</span> skills uninstall <span class="flag">&lt;name&gt;</span></div>
+        </div>
+        <div class="scenario-result" id="result-skill-config">
+          <h4>技能配置</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 交互式启用/禁用技能</span>
+<span class="cmd">hermes</span> skills config
+<span class="comment"># 在对话中手动加载技能</span>
+/skill <span class="flag">&lt;name&gt;</span>
+<span class="comment"># 重新扫描技能目录</span>
+/reload-skills</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 消息平台 -->
+    <div class="gen-category" data-cat="消息平台配置">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">💬</span>
+        <span>消息平台配置</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'setup-telegram')">
+            <h4>配置 Telegram</h4>
+            <p>连接 Telegram Bot</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'setup-feishu')">
+            <h4>配置飞书</h4>
+            <p>连接飞书机器人</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'setup-discord')">
+            <h4>配置 Discord</h4>
+            <p>连接 Discord Bot</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'gateway-manage')">
+            <h4>管理网关服务</h4>
+            <p>启动、停止、查看状态</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-setup-telegram">
+          <h4>配置 Telegram</h4>
+          <div class="step">
+            <div class="step-label">1. 创建 Bot</div>
+            <div class="step-desc">在 Telegram 中找 <code>@BotFather</code>，发送 <code>/newbot</code>，获取 Bot Token。</div>
+          </div>
+          <div class="step">
+            <div class="step-label">2. 配置 Token</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 编辑 ~/.hermes/.env</span>
+TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIjKlMnOpQrStUvWxYz</div>
+          </div>
+          <div class="step">
+            <div class="step-label">3. 启动网关</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> gateway setup         <span class="comment"># 交互式选择平台</span>
+<span class="cmd">hermes</span> gateway install      <span class="comment"># 安装为后台服务</span>
+<span class="cmd">hermes</span> gateway start        <span class="comment"># 启动服务</span></div>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-setup-feishu">
+          <h4>配置飞书</h4>
+          <div class="step">
+            <div class="step-label">1. 创建飞书应用</div>
+            <div class="step-desc">在<a href="https://open.feishu.cn" target="_blank">飞书开放平台</a>创建应用，获取 App ID、App Secret 和 Verification Token。</div>
+          </div>
+          <div class="step">
+            <div class="step-label">2. 配置环境变量</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 编辑 ~/.hermes/.env</span>
+FEISHU_APP_ID=cli_xxxxxxxxxx
+FEISHU_APP_SECRET=xxxxxxxxxx
+FEISHU_VERIFICATION_TOKEN=xxxxxxxxxx</div>
+          </div>
+          <div class="step">
+            <div class="step-label">3. 启动</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> gateway setup         <span class="comment"># 选择飞书</span>
+<span class="cmd">hermes</span> gateway install
+<span class="cmd">hermes</span> gateway start</div>
+          </div>
+          <div class="info-box">飞书需要配置事件回调 URL，详见<a href="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/" target="_blank">官方文档</a>。</div>
+        </div>
+        <div class="scenario-result" id="result-setup-discord">
+          <h4>配置 Discord</h4>
+          <div class="step">
+            <div class="step-label">1. 创建 Discord 应用</div>
+            <div class="step-desc">在<a href="https://discord.com/developers" target="_blank">Discord Developer Portal</a>创建应用，添加 Bot，获取 Token。</div>
+          </div>
+          <div class="step">
+            <div class="step-label">2. 重要：开启 Intent</div>
+            <div class="step-desc">在 Bot 设置中开启 <strong>Message Content Intent</strong>，否则 Bot 无法读取消息内容。</div>
+          </div>
+          <div class="step">
+            <div class="step-label">3. 配置并启动</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># ~/.hermes/.env</span>
+DISCORD_BOT_TOKEN=MTxxxxxxxxxx.xxxxxx.xxxxxxxxxxxxx
+
+<span class="cmd">hermes</span> gateway setup    <span class="comment"># 选择 Discord</span>
+<span class="cmd">hermes</span> gateway install
+<span class="cmd">hermes</span> gateway start</div>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-gateway-manage">
+          <h4>管理网关服务</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> gateway status      <span class="comment"># 查看状态</span>
+<span class="cmd">hermes</span> gateway start       <span class="comment"># 启动后台服务</span>
+<span class="cmd">hermes</span> gateway stop        <span class="comment"># 停止服务</span>
+<span class="cmd">hermes</span> gateway restart     <span class="comment"># 重启服务</span>
+<span class="cmd">hermes</span> gateway run         <span class="comment"># 前台运行（调试用）</span>
+<span class="cmd">hermes</span> gateway list        <span class="comment"># 列出所有 Profile 的网关状态</span></div>
+          <div class="info-box warn">
+            <strong>SSH 环境注意：</strong>SSH 断开后后台服务可能停止。执行 <code>sudo loginctl enable-linger $USER</code> 保持服务运行。WSL2 需要在 <code>/etc/wsl.conf</code> 中设置 <code>systemd=true</code>。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MCP Server -->
+    <div class="gen-category" data-cat="MCP Server">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">🔗</span>
+        <span>MCP Server</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'add-mcp')">
+            <h4>添加 MCP Server</h4>
+            <p>连接新的工具服务器</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'manage-mcp')">
+            <h4>管理 MCP Servers</h4>
+            <p>列出、测试、移除</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-add-mcp">
+          <h4>添加 MCP Server</h4>
+          <div class="step">
+            <div class="step-label">交互式添加（推荐）</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> mcp add <span class="flag">&lt;name&gt;</span>
+<span class="comment"># 然后按提示输入 --command 或 --url</span></div>
+          </div>
+          <div class="step">
+            <div class="step-label">命令式添加</div>
+            <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># stdio 模式（本地进程）</span>
+<span class="cmd">hermes</span> mcp add filesystem <span class="flag">--command</span> <span class="string">"npx -y @modelcontextprotocol/server-filesystem /home"</span>
+<span class="comment"># HTTP 模式</span>
+<span class="cmd">hermes</span> mcp add myserver <span class="flag">--url</span> <span class="string">"http://localhost:3000/mcp"</span>
+<span class="comment"># 浏览官方推荐的 MCP</span>
+<span class="cmd">hermes</span> mcp catalog</div>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-manage-mcp">
+          <h4>管理 MCP Servers</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> mcp list           <span class="comment"># 列出已配置的服务器</span>
+<span class="cmd">hermes</span> mcp test <span class="flag">&lt;name&gt;</span>    <span class="comment"># 测试连接</span>
+<span class="cmd">hermes</span> mcp configure <span class="flag">&lt;name&gt;</span> <span class="comment"># 选择启用的工具</span>
+<span class="cmd">hermes</span> mcp remove <span class="flag">&lt;name&gt;</span>   <span class="comment"># 移除服务器</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 定时任务 -->
+    <div class="gen-category" data-cat="定时任务">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">⏰</span>
+        <span>定时任务（Cron）</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'create-cron')">
+            <h4>创建定时任务</h4>
+            <p>设置周期性执行的任务</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'manage-cron')">
+            <h4>管理定时任务</h4>
+            <p>查看、暂停、删除任务</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-create-cron">
+          <h4>创建定时任务</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 每天早上 9 点执行</span>
+<span class="cmd">hermes</span> cron create <span class="string">"0 9 * * *"</span>
+<span class="comment"># 每 30 分钟执行</span>
+<span class="cmd">hermes</span> cron create <span class="string">"30m"</span>
+<span class="comment"># 每周一上午执行</span>
+<span class="cmd">hermes</span> cron create <span class="string">"every monday 9am"</span>
+<span class="comment"># 一次性定时任务（ISO 时间戳）</span>
+<span class="cmd">hermes</span> cron create <span class="string">"2026-06-15T09:00:00"</span></div>
+          <div class="info-box">创建后会进入交互式设置，配置任务的 prompt（执行内容）、交付目标、使用的 Skill 等。</div>
+        </div>
+        <div class="scenario-result" id="result-manage-cron">
+          <h4>管理定时任务</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> cron list           <span class="comment"># 列出任务</span>
+<span class="cmd">hermes</span> cron list <span class="flag">--all</span>     <span class="comment"># 包括已暂停的</span>
+<span class="cmd">hermes</span> cron pause <span class="flag">&lt;id&gt;</span>     <span class="comment"># 暂停任务</span>
+<span class="cmd">hermes</span> cron resume <span class="flag">&lt;id&gt;</span>    <span class="comment"># 恢复任务</span>
+<span class="cmd">hermes</span> cron run <span class="flag">&lt;id&gt;</span>       <span class="comment"># 立即触发一次</span>
+<span class="cmd">hermes</span> cron edit <span class="flag">&lt;id&gt;</span>       <span class="comment"># 编辑任务</span>
+<span class="cmd">hermes</span> cron remove <span class="flag">&lt;id&gt;</span>    <span class="comment"># 删除任务</span>
+<span class="cmd">hermes</span> cron status          <span class="comment"># 调度器状态</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 配置管理 -->
+    <div class="gen-category" data-cat="配置管理">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">⚙️</span>
+        <span>配置管理</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'view-config')">
+            <h4>查看和编辑配置</h4>
+            <p>查看当前配置或打开编辑器</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'set-config')">
+            <h4>修改配置项</h4>
+            <p>设置具体的配置值</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'tools-manage')">
+            <h4>管理工具集</h4>
+            <p>启用/禁用工具</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'run-doctor')">
+            <h4>运行诊断</h4>
+            <p>检查配置和依赖问题</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-view-config">
+          <h4>查看和编辑配置</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> config              <span class="comment"># 查看当前配置</span>
+<span class="cmd">hermes</span> config edit          <span class="comment"># 在编辑器中打开 config.yaml</span>
+<span class="cmd">hermes</span> config path          <span class="comment"># 配置文件路径</span>
+<span class="cmd">hermes</span> config env-path      <span class="comment"># .env 文件路径</span>
+<span class="cmd">hermes</span> config check         <span class="comment"># 检查配置是否过时</span></div>
+        </div>
+        <div class="scenario-result" id="result-set-config">
+          <h4>修改配置项</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 常用配置示例</span>
+<span class="cmd">hermes</span> config set model.context_length 131072
+<span class="cmd">hermes</span> config set agent.max_turns 50
+<span class="cmd">hermes</span> config set approvals.mode smart
+<span class="cmd">hermes</span> config set security.redact_secrets true
+<span class="cmd">hermes</span> config set compression.enabled true
+<span class="cmd">hermes</span> config set display.show_cost true
+<span class="cmd">hermes</span> config set memory.memory_enabled true</div>
+        </div>
+        <div class="scenario-result" id="result-tools-manage">
+          <h4>管理工具集</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 交互式工具管理（推荐）</span>
+<span class="cmd">hermes</span> tools
+<span class="comment"># 命令行方式</span>
+<span class="cmd">hermes</span> tools list            <span class="comment"># 查看所有工具</span>
+<span class="cmd">hermes</span> tools enable browser  <span class="comment"># 启用浏览器工具</span>
+<span class="cmd">hermes</span> tools disable browser <span class="comment"># 禁用浏览器工具</span></div>
+          <div class="info-box">工具变更在新会话中生效。在对话中输入 <code>/reset</code> 开始新会话使变更立即生效。</div>
+        </div>
+        <div class="scenario-result" id="result-run-doctor">
+          <h4>运行诊断</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> doctor              <span class="comment"># 检查配置和依赖</span>
+<span class="cmd">hermes</span> doctor <span class="flag">--fix</span>          <span class="comment"># 自动修复问题</span>
+<span class="cmd">hermes</span> status               <span class="comment"># 查看各组件状态</span>
+<span class="cmd">hermes</span> status <span class="flag">--all</span>          <span class="comment"># 详细状态</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 凭证管理 -->
+    <div class="gen-category" data-cat="凭证管理">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">🔑</span>
+        <span>凭证管理</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'auth-manage')">
+            <h4>管理凭证</h4>
+            <p>添加、查看、移除 API 凭证</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'oauth-auth')">
+            <h4>OAuth 认证</h4>
+            <p>通过浏览器登录认证</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-auth-manage">
+          <h4>管理凭证</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> auth                <span class="comment"># 交互式凭证向导</span>
+<span class="cmd">hermes</span> auth add <span class="flag">&lt;provider&gt;</span>  <span class="comment"># 添加提供商凭证</span>
+<span class="cmd">hermes</span> auth list             <span class="comment"># 列出所有凭证</span>
+<span class="cmd">hermes</span> auth remove <span class="flag">&lt;provider&gt;</span> <span class="comment"># 移除凭证</span></div>
+        </div>
+        <div class="scenario-result" id="result-oauth-auth">
+          <h4>OAuth 认证</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 支持 OAuth 的提供商</span>
+<span class="cmd">hermes</span> auth add nous          <span class="comment"># Nous Portal</span>
+<span class="cmd">hermes</span> auth add openai-codex  <span class="comment"># OpenAI Codex</span>
+<span class="cmd">hermes</span> auth add qwen-oauth    <span class="comment"># 通义千问</span>
+<span class="comment"># 也可以用交互式选择器</span>
+<span class="cmd">hermes</span> model                  <span class="comment"># 包含 OAuth 流程</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /gen-categories -->
+</section>
+
+<!-- ==================== SKILLS ==================== -->
+<section class="page-section" id="page-skills">
+  <h2>Skills 系统</h2>
+
+  <h3>什么是 Skill？</h3>
+  <p>Skill 是 Hermes 的「程序性记忆」—— 可复用的操作流程文档。当 Hermes 解决了一个复杂问题、发现了有效的工作流程、或被你纠正了做法，它可以将这些经验保存为 Skill，在未来的会话中自动加载使用。</p>
+  <p>Skills 随时间积累，让 Hermes 在你的特定任务和环境中变得越来越好。</p>
+
+  <h3>Skill 来源</h3>
+  <table class="doc-table">
+    <tr><th>来源</th><th>说明</th></tr>
+    <tr><td>内置 Skill</td><td>随 Hermes 安装的官方技能</td></tr>
+    <tr><td>Hub 安装</td><td>从 Skill 仓库安装的社区技能</td></tr>
+    <tr><td>Agent 创建</td><td>Hermes 在工作过程中自动创建的技能</td></tr>
+    <tr><td>自定义</td><td>用户手动编写的 SKILL.md 文件</td></tr>
+  </table>
+
+  <h3>管理 Skills</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 浏览和搜索</span>
+<span class="cmd">hermes</span> skills browse               <span class="comment"># 浏览所有可用技能</span>
+<span class="cmd">hermes</span> skills search <span class="string">"关键词"</span>       <span class="comment"># 搜索技能</span>
+<span class="cmd">hermes</span> skills list                  <span class="comment"># 已安装的技能</span>
+
+<span class="comment"># 安装和更新</span>
+<span class="cmd">hermes</span> skills install <span class="flag">&lt;skill-id&gt;</span>    <span class="comment"># 安装技能</span>
+<span class="cmd">hermes</span> skills check                  <span class="comment"># 检查更新</span>
+<span class="cmd">hermes</span> skills update                 <span class="comment"># 更新所有过时技能</span>
+
+<span class="comment"># 卸载和配置</span>
+<span class="cmd">hermes</span> skills uninstall <span class="flag">&lt;name&gt;</span>      <span class="comment"># 卸载技能</span>
+<span class="cmd">hermes</span> skills config                 <span class="comment"># 交互式启用/禁用</span>
+
+<span class="comment"># 在对话中使用</span>
+/skill <span class="flag">&lt;name&gt;</span>                       <span class="comment"># 手动加载技能</span>
+/reload-skills                       <span class="comment"># 重新扫描技能目录</span></div>
+
+  <h3>Curator — 自动维护</h3>
+  <p>Hermes 内置 Curator 系统，自动管理 Agent 创建的 Skills 生命周期：</p>
+  <ul>
+    <li>追踪每个 Skill 的使用频率和活动时间</li>
+    <li>标记长期未使用的 Skill 为「过时」</li>
+    <li>自动归档（从不删除），保留备份</li>
+    <li>固定（pin）的 Skill 不受自动管理影响</li>
+  </ul>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> curator status     <span class="comment"># 查看 Curator 状态</span>
+<span class="cmd">hermes</span> curator run        <span class="comment"># 手动执行维护</span>
+<span class="cmd">hermes</span> curator pin <span class="flag">&lt;name&gt;</span> <span class="comment"># 固定技能（不被归档）</span></div>
+
+  <h3>创建自定义 Skill</h3>
+  <p>Skill 是一个 Markdown 文件（SKILL.md），放在 <code>~/.hermes/skills/</code> 目录下。包含 YAML 前置信息和 Markdown 正文：</p>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button>---
+name: my-skill
+description: "技能描述，说明何时使用"
+tags: [tag1, tag2]
+---
+
+# 技能标题
+
+## 触发条件
+描述何时应该加载这个技能。
+
+## 操作步骤
+1. 第一步...
+2. 第二步...
+
+## 注意事项
+常见坑和解决方案。</div>
+</section>
+
+<!-- ==================== CONFIG ==================== -->
+<section class="page-section" id="page-config">
+  <h2>配置管理</h2>
+
+  <h3>配置文件位置</h3>
+  <table class="doc-table">
+    <tr><th>文件</th><th>说明</th></tr>
+    <tr><td><code>~/.hermes/config.yaml</code></td><td>主配置文件（模型、工具、显示等）</td></tr>
+    <tr><td><code>~/.hermes/.env</code></td><td>API 密钥和敏感信息</td></tr>
+    <tr><td><code>~/.hermes/auth.json</code></td><td>OAuth 令牌和凭证池</td></tr>
+    <tr><td><code>~/.hermes/skills/</code></td><td>安装的 Skills 目录</td></tr>
+    <tr><td><code>~/.hermes/state.db</code></td><td>会话存储（SQLite）</td></tr>
+    <tr><td><code>~/.hermes/logs/</code></td><td>日志文件</td></tr>
+  </table>
+
+  <h3>常用配置项</h3>
+  <table class="doc-table">
+    <tr><th>配置键</th><th>说明</th><th>示例值</th></tr>
+    <tr><td><code>model.default</code></td><td>默认模型</td><td><code>anthropic/claude-sonnet-4</code></td></tr>
+    <tr><td><code>model.provider</code></td><td>默认提供商</td><td><code>openrouter</code></td></tr>
+    <tr><td><code>model.base_url</code></td><td>自定义 API 端点</td><td><code>http://localhost:11434/v1</code></td></tr>
+    <tr><td><code>model.context_length</code></td><td>上下文长度</td><td><code>131072</code></td></tr>
+    <tr><td><code>agent.max_turns</code></td><td>最大对话轮次</td><td><code>90</code></td></tr>
+    <tr><td><code>terminal.timeout</code></td><td>命令超时（秒）</td><td><code>180</code></td></tr>
+    <tr><td><code>approvals.mode</code></td><td>命令审批模式</td><td><code>manual</code> / <code>smart</code> / <code>off</code></td></tr>
+    <tr><td><code>compression.enabled</code></td><td>上下文压缩</td><td><code>true</code></td></tr>
+    <tr><td><code>security.redact_secrets</code></td><td>密钥脱敏</td><td><code>false</code></td></tr>
+    <tr><td><code>display.show_cost</code></td><td>显示费用</td><td><code>false</code></td></tr>
+    <tr><td><code>memory.memory_enabled</code></td><td>持久记忆</td><td><code>true</code></td></tr>
+  </table>
+
+  <h3>修改配置</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 设置单个配置项</span>
+<span class="cmd">hermes</span> config set <span class="flag">model.context_length</span> <span class="string">131072</span>
+<span class="cmd">hermes</span> config set <span class="flag">approvals.mode</span> <span class="string">smart</span>
+
+<span class="comment"># 在编辑器中手动编辑（推荐大改时使用）</span>
+<span class="cmd">hermes</span> config edit
+
+<span class="comment"># 检查和迁移过时配置</span>
+<span class="cmd">hermes</span> config check
+<span class="cmd">hermes</span> config migrate</div>
+
+  <div class="info-box warn">
+    <strong>注意：</strong>大部分配置变更需要重启才能生效。CLI 中退出重新运行 <code>hermes</code>，Gateway 中使用 <code>/restart</code>。工具变更在 <code>/reset</code>（新会话）后生效。
+  </div>
+
+  <h3>支持的提供商</h3>
+  <table class="doc-table">
+    <tr><th>提供商</th><th>环境变量</th><th>认证方式</th></tr>
+    <tr><td>OpenRouter</td><td><code>OPENROUTER_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>Anthropic</td><td><code>ANTHROPIC_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>Google Gemini</td><td><code>GOOGLE_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>DeepSeek</td><td><code>DEEPSEEK_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>xAI / Grok</td><td><code>XAI_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>MiniMax</td><td><code>MINIMAX_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>Kimi / Moonshot</td><td><code>KIMI_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>阿里 / DashScope</td><td><code>DASHSCOPE_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>小米 MiMo</td><td><code>XIAOMI_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>Nous Portal</td><td>—</td><td>OAuth</td></tr>
+    <tr><td>GitHub Copilot</td><td><code>COPILOT_GITHUB_TOKEN</code></td><td>Token</td></tr>
+  </table>
+  <p>完整列表见 <a href="https://hermes-agent.nousresearch.com/docs/integrations/providers" target="_blank">官方文档</a>。</p>
+</section>
+
+<!-- ==================== GATEWAY ==================== -->
+<section class="page-section" id="page-gateway">
+  <h2>消息平台</h2>
+
+  <h3>支持的平台</h3>
+  <table class="doc-table">
+    <tr><th>平台</th><th>说明</th></tr>
+    <tr><td>Telegram</td><td>Bot 模式，支持群组和私聊</td></tr>
+    <tr><td>Discord</td><td>Bot 模式，需开启 Message Content Intent</td></tr>
+    <tr><td>Slack</td><td>App 模式，需订阅 message.channels 事件</td></tr>
+    <tr><td>飞书（Feishu/Lark）</td><td>应用机器人</td></tr>
+    <tr><td>微信（Weixin/WeCom）</td><td>企业微信 / 微信</td></tr>
+    <tr><td>钉钉（DingTalk）</td><td>群机器人</td></tr>
+    <tr><td>WhatsApp</td><td>通过 WhatsApp Business API</td></tr>
+    <tr><td>Signal</td><td>signal-cli 集成</td></tr>
+    <tr><td>Matrix</td><td>Matrix 协议</td></tr>
+    <tr><td>Email</td><td>邮件收发</td></tr>
+    <tr><td>Home Assistant</td><td>智能家居控制</td></tr>
+    <tr><td>Webhook</td><td>自定义 HTTP 回调</td></tr>
+    <tr><td>API Server</td><td>OpenAI 兼容 API（可接 Open WebUI）</td></tr>
+  </table>
+
+  <h3>基本设置流程</h3>
+  <ol class="step-list">
+    <li>
+      <strong>运行交互式设置</strong>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> gateway setup</div>
+      <p>选择要配置的平台，按提示输入 Token / 密钥。</p>
+    </li>
+    <li>
+      <strong>配置环境变量</strong>
+      <p>将 API Token 和密钥添加到 <code>~/.hermes/.env</code>。具体变量名取决于平台（参见上表各平台的说明）。</p>
+    </li>
+    <li>
+      <strong>安装并启动</strong>
+      <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> gateway install      <span class="comment"># 安装为系统服务</span>
+<span class="cmd">hermes</span> gateway start        <span class="comment"># 启动服务</span>
+<span class="cmd">hermes</span> gateway status       <span class="comment"># 检查状态</span></div>
+    </li>
+  </ol>
+
+  <h3>管理命令</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> gateway status      <span class="comment"># 查看状态</span>
+<span class="cmd">hermes</span> gateway start       <span class="comment"># 启动</span>
+<span class="cmd">hermes</span> gateway stop        <span class="comment"># 停止</span>
+<span class="cmd">hermes</span> gateway restart     <span class="comment"># 重启</span>
+<span class="cmd">hermes</span> gateway run         <span class="comment"># 前台运行（调试用）</span>
+<span class="cmd">hermes</span> gateway list        <span class="comment"># 列出所有 Profile 的网关</span>
+<span class="cmd">hermes</span> gateway uninstall   <span class="comment"># 卸载系统服务</span></div>
+
+  <h3>在消息平台中使用斜杠命令</h3>
+  <p>在 Telegram、Discord 等平台中也可以使用斜杠命令：</p>
+  <table class="doc-table">
+    <tr><th>命令</th><th>说明</th></tr>
+    <tr><td><code>/help</code></td><td>显示可用命令</td></tr>
+    <tr><td><code>/model</code></td><td>查看/切换模型</td></tr>
+    <tr><td><code>/approve</code> / <code>/deny</code></td><td>审批待确认的命令</td></tr>
+    <tr><td><code>/restart</code></td><td>重启网关</td></tr>
+    <tr><td><code>/update</code></td><td>更新 Hermes</td></tr>
+    <tr><td><code>/platforms</code></td><td>查看平台连接状态</td></tr>
+  </table>
+
+  <div class="info-box">
+    <strong>多实例运行：</strong>如果需要在同一平台运行两个实例（如两个微信号），可以创建多个 Profile，每个 Profile 独立配置网关。
+  </div>
+</section>
+
+<!-- ==================== ADVANCED ==================== -->
+<section class="page-section" id="page-advanced">
+  <h2>进阶功能</h2>
+
+  <h3>Delegation — 子任务委派</h3>
+  <p>Hermes 可以将任务委派给子智能体，子智能体在隔离的上下文中运行，完成后返回结果摘要。</p>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 配置委派参数</span>
+<span class="cmd">hermes</span> config set delegation.model anthropic/claude-sonnet-4
+<span class="cmd">hermes</span> config set delegation.max_iterations 50</div>
+  <ul>
+    <li><strong>leaf 角色</strong>（默认）：专注执行，不能再委派</li>
+    <li><strong>orchestrator 角色</strong>：可以创建自己的子工作者</li>
+    <li>通过 <code>delegation.max_concurrent_children</code> 控制并发数</li>
+  </ul>
+
+  <h3>Voice — 语音功能</h3>
+  <h4>语音转文字（STT）</h4>
+  <table class="doc-table">
+    <tr><th>提供商</th><th>说明</th><th>环境变量</th></tr>
+    <tr><td>Local faster-whisper</td><td>免费，本地运行</td><td>无需（<code>pip install faster-whisper</code>）</td></tr>
+    <tr><td>Groq Whisper</td><td>免费额度</td><td><code>GROQ_API_KEY</code></td></tr>
+    <tr><td>OpenAI Whisper</td><td>付费</td><td><code>VOICE_TOOLS_OPENAI_KEY</code></td></tr>
+  </table>
+
+  <h4>文字转语音（TTS）</h4>
+  <table class="doc-table">
+    <tr><th>提供商</th><th>说明</th><th>环境变量</th></tr>
+    <tr><td>Edge TTS</td><td>免费（默认）</td><td>无需</td></tr>
+    <tr><td>ElevenLabs</td><td>免费额度</td><td><code>ELEVENLABS_API_KEY</code></td></tr>
+    <tr><td>OpenAI</td><td>付费</td><td><code>VOICE_TOOLS_OPENAI_KEY</code></td></tr>
+  </table>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 对话中切换语音模式</span>
+/voice on        <span class="comment"># 语音对语音</span>
+/voice tts       <span class="comment"># 始终语音回复</span>
+/voice off       <span class="comment"># 关闭</span></div>
+
+  <h3>Webhook</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> webhook subscribe <span class="flag">&lt;name&gt;</span>  <span class="comment"># 创建 webhook 路由</span>
+<span class="cmd">hermes</span> webhook list              <span class="comment"># 列出订阅</span>
+<span class="cmd">hermes</span> webhook test <span class="flag">&lt;name&gt;</span>      <span class="comment"># 发送测试请求</span>
+<span class="cmd">hermes</span> webhook remove <span class="flag">&lt;name&gt;</span>    <span class="comment"># 移除</span></div>
+
+  <h3>其他有用命令</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 用量分析</span>
+<span class="cmd">hermes</span> insights
+<span class="cmd">hermes</span> insights <span class="flag">--days 30</span>
+
+<span class="comment"># 更新 Hermes</span>
+<span class="cmd">hermes</span> update
+
+<span class="comment"># 备份和恢复</span>
+<span class="cmd">hermes</span> backup              <span class="comment"># 备份到 zip</span>
+<span class="cmd">hermes</span> import <span class="flag">&lt;file&gt;</span>       <span class="comment"># 从 zip 恢复</span>
+
+<span class="comment"># Shell 补全</span>
+<span class="cmd">hermes</span> completion bash     <span class="comment"># Bash 补全</span>
+<span class="cmd">hermes</span> completion zsh      <span class="comment"># Zsh 补全</span>
+
+<span class="comment"># 插件管理</span>
+<span class="cmd">hermes</span> plugins list
+<span class="cmd">hermes</span> plugins install <span class="flag">&lt;name&gt;</span>
+<span class="cmd">hermes</span> plugins remove <span class="flag">&lt;name&gt;</span></div>
+</section>
+
+<!-- ==================== FAQ ==================== -->
+<section class="page-section" id="page-faq">
+  <h2>常见问题</h2>
+
+  <h3>工具不可用</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 检查工具是否启用</span>
+<span class="cmd">hermes</span> tools list
+<span class="comment"># 启用需要的工具</span>
+<span class="cmd">hermes</span> tools enable <span class="flag">&lt;toolset&gt;</span>
+<span class="comment"># 开始新会话使变更生效</span>
+/reset</div>
+  <p>某些工具需要环境变量（如浏览器工具需要 Browserbase API Key），检查 <code>~/.hermes/.env</code>。</p>
+
+  <h3>模型/提供商问题</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> doctor              <span class="comment"># 全面检查</span>
+<span class="cmd">hermes</span> auth list             <span class="comment"># 检查凭证</span>
+<span class="cmd">hermes</span> auth add <span class="flag">&lt;provider&gt;</span>  <span class="comment"># 重新认证</span></div>
+  <ul>
+    <li>确认 <code>~/.hermes/.env</code> 中的 API Key 正确</li>
+    <li>Copilot 403 错误：<code>gh auth login</code> 的 Token 不适用于 Copilot API，需要通过 <code>hermes model</code> → GitHub Copilot 走 OAuth 流程</li>
+  </ul>
+
+  <h3>配置变更不生效</h3>
+  <ul>
+    <li><strong>工具/技能变更：</strong>在对话中输入 <code>/reset</code> 开始新会话</li>
+    <li><strong>配置文件变更：</strong>CLI 中退出重新运行，Gateway 中使用 <code>/restart</code></li>
+    <li><strong>代码变更：</strong>重启 CLI 或 Gateway 进程</li>
+  </ul>
+
+  <h3>Skill 不显示</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> skills list           <span class="comment"># 确认已安装</span>
+<span class="cmd">hermes</span> skills config          <span class="comment"># 检查平台启用状态</span>
+<span class="comment"># 手动加载</span>
+/skill <span class="flag">&lt;name&gt;</span></div>
+
+  <h3>Gateway 问题</h3>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 查看日志</span>
+<span class="cmd">tail</span> -20 ~/.hermes/logs/gateway.log</div>
+  <table class="doc-table">
+    <tr><th>问题</th><th>解决</th></tr>
+    <tr><td>SSH 断开后 Gateway 停止</td><td><code>sudo loginctl enable-linger $USER</code></td></tr>
+    <tr><td>WSL2 中 Gateway 不稳定</td><td>在 <code>/etc/wsl.conf</code> 设置 <code>systemd=true</code></td></tr>
+    <tr><td>Gateway 崩溃循环</td><td><code>systemctl --user reset-failed hermes-gateway</code></td></tr>
+    <tr><td>Discord Bot 无响应</td><td>开启 Message Content Intent</td></tr>
+    <tr><td>Slack Bot 仅私聊可用</td><td>订阅 message.channels 事件</td></tr>
+  </table>
+
+  <h3>中国网络环境</h3>
+  <ul>
+    <li>安装时配置代理：<code>https_proxy=http://127.0.0.1:7890 bash install.sh</code></li>
+    <li>Git clone 失败：使用 GitHub 镜像或配置 <code>git config --global url."https://ghproxy.com/https://github.com/".insteadOf "https://github.com/"</code></li>
+    <li>推荐使用硅基流动（SiliconFlow）等国内提供商作为 OpenRouter 替代</li>
+    <li>配置 <code>model.context_length</code> 可跳过 OpenRouter 的元数据请求（网络受限时有用）</li>
+  </ul>
+
+  <h3>Windows 专属问题</h3>
+  <ul>
+    <li><strong>换行：</strong>使用 <code>Ctrl+Enter</code>（而非 Alt+Enter，后者会全屏）</li>
+    <li><strong>HTTP 400 错误：</strong>config.yaml 可能保存为 UTF-8 BOM 格式，用 <code>hermes config edit</code> 重新保存</li>
+    <li><strong>路径：</strong>Hermes 接受正斜杠 <code>/</code>，建议统一使用</li>
+  </ul>
+</section>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ===== JavaScript ===== -->
+<script>
+// Page routing
+function showPage(id) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  const link = document.querySelector('.nav-link[data-page="' + id + '"]');
+  if (link) link.classList.add('active');
+  window.location.hash = id;
+  window.scrollTo(0, 0);
+  // Close mobile sidebar
+  document.querySelector('.sidebar').classList.remove('open');
+}
+
+// Hash routing on load
+window.addEventListener('load', () => {
+  const hash = window.location.hash.slice(1) || 'home';
+  showPage(hash);
+});
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash.slice(1) || 'home';
+  showPage(hash);
+});
+
+// Copy code block
+function copyCode(btn) {
+  const block = btn.parentElement;
+  const text = block.textContent.replace('复制', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// Copy arbitrary text
+function copyText(el, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const tip = el.querySelector('.copy-tip');
+    if (tip) { tip.textContent = '已复制!'; setTimeout(() => { tip.textContent = '点击复制'; }, 1500); }
+  });
+}
+
+// Toggle command generator category
+function toggleCat(header) {
+  header.parentElement.classList.toggle('open');
+}
+
+// Show scenario result
+function showScenario(btn, id) {
+  // Deselect siblings
+  btn.parentElement.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  // Hide other results in same category
+  const body = btn.closest('.gen-category-body');
+  body.querySelectorAll('.scenario-result').forEach(r => r.classList.remove('show'));
+  const result = document.getElementById('result-' + id);
+  if (result) result.classList.add('show');
+}
+
+// Filter scenarios
+function filterScenarios(query) {
+  query = query.toLowerCase();
+  document.querySelectorAll('.gen-category').forEach(cat => {
+    const catName = cat.dataset.cat.toLowerCase();
+    const scenarios = cat.querySelectorAll('.scenario-btn');
+    let hasMatch = false;
+    scenarios.forEach(btn => {
+      const text = btn.textContent.toLowerCase();
+      const match = !query || text.includes(query) || catName.includes(query);
+      btn.style.display = match ? '' : 'none';
+      if (match) hasMatch = true;
+    });
+    cat.style.display = hasMatch || !query ? '' : 'none';
+    if (query && hasMatch) cat.classList.add('open');
+  });
+}
+</script>
+</body>
+</html>
