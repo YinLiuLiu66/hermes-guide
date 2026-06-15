@@ -215,7 +215,7 @@ a:hover { text-decoration: underline; }
 <aside class="sidebar">
   <div class="sidebar-header">
     <h1>Ⓗ Hermes Agent</h1>
-    <p>使用指南 v0.15</p>
+    <p>使用指南 v0.20</p>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">入门</div>
@@ -390,22 +390,79 @@ GOOGLE_API_KEY=AIzaxxxxxxxxxx</div>
 <span class="cmd">hermes</span> sessions export output.jsonl</div>
 
   <h3>常用斜杠命令</h3>
-  <p>在交互式对话中输入以下命令：</p>
+  <p>在交互式对话中输入以下命令（输入 <code>/help</code> 查看完整列表）：</p>
+
+  <h4>会话控制</h4>
   <table class="doc-table">
     <tr><th>命令</th><th>说明</th></tr>
-    <tr><td><code>/help</code></td><td>显示所有可用命令</td></tr>
-    <tr><td><code>/new</code></td><td>开始新会话</td></tr>
-    <tr><td><code>/model [name]</code></td><td>查看或切换模型</td></tr>
-    <tr><td><code>/skill &lt;name&gt;</code></td><td>加载指定 Skill</td></tr>
-    <tr><td><code>/tools</code></td><td>管理工具集</td></tr>
-    <tr><td><code>/config</code></td><td>查看当前配置</td></tr>
-    <tr><td><code>/save</code></td><td>保存对话到文件</td></tr>
-    <tr><td><code>/copy</code></td><td>复制最后的回复到剪贴板</td></tr>
+    <tr><td><code>/new</code> (<code>/reset</code>)</td><td>开始新会话</td></tr>
     <tr><td><code>/clear</code></td><td>清屏并开始新会话</td></tr>
     <tr><td><code>/retry</code></td><td>重新发送最后一条消息</td></tr>
     <tr><td><code>/undo</code></td><td>撤销最后一轮对话</td></tr>
     <tr><td><code>/compress</code></td><td>手动压缩上下文</td></tr>
-    <tr><td><code>/quit</code></td><td>退出</td></tr>
+    <tr><td><code>/stop</code></td><td>终止后台进程</td></tr>
+    <tr><td><code>/title [name]</code></td><td>命名当前会话</td></tr>
+    <tr><td><code>/resume [name]</code></td><td>恢复命名会话</td></tr>
+    <tr><td><code>/branch</code> (<code>/fork</code>)</td><td>分支当前会话</td></tr>
+    <tr><td><code>/snapshot</code></td><td>创建/恢复 Hermes 状态快照</td></tr>
+    <tr><td><code>/rollback [N]</code></td><td>恢复文件系统检查点</td></tr>
+    <tr><td><code>/goal [text]</code></td><td>设置跨轮次目标（子命令：status/pause/resume/clear）</td></tr>
+    <tr><td><code>/background &lt;prompt&gt;</code></td><td>在后台运行任务</td></tr>
+    <tr><td><code>/queue &lt;prompt&gt;</code></td><td>排队到下一轮执行</td></tr>
+    <tr><td><code>/steer &lt;prompt&gt;</code></td><td>在下一次工具调用后注入消息（不中断当前操作）</td></tr>
+    <tr><td><code>/agents</code> (<code>/tasks</code>)</td><td>显示活跃的子 agent 和任务</td></tr>
+  </table>
+
+  <h4>配置与显示</h4>
+  <table class="doc-table">
+    <tr><th>命令</th><th>说明</th></tr>
+    <tr><td><code>/model [name]</code></td><td>查看或切换模型</td></tr>
+    <tr><td><code>/personality [name]</code></td><td>设置人格</td></tr>
+    <tr><td><code>/reasoning [level]</code></td><td>设置推理级别（none/minimal/low/medium/high/xhigh）</td></tr>
+    <tr><td><code>/verbose</code></td><td>循环切换详细程度（off → new → all → verbose）</td></tr>
+    <tr><td><code>/yolo</code></td><td>切换命令审批绕过</td></tr>
+    <tr><td><code>/voice [on|off|tts]</code></td><td>切换语音模式</td></tr>
+    <tr><td><code>/config</code></td><td>查看当前配置</td></tr>
+    <tr><td><code>/skin [name]</code></td><td>更换 CLI 主题</td></tr>
+    <tr><td><code>/statusbar</code></td><td>切换状态栏显示</td></tr>
+    <tr><td><code>/footer [on|off]</code></td><td>切换网关回复的元数据脚注</td></tr>
+    <tr><td><code>/indicator [style]</code></td><td>选择忙碌指示器样式（kaomoji/emoji/unicode/ascii）</td></tr>
+    <tr><td><code>/busy</code></td><td>控制 Enter 键行为（queue/steer/interrupt/status）</td></tr>
+    <tr><td><code>/redraw</code></td><td>强制 UI 重绘</td></tr>
+  </table>
+
+  <h4>工具与技能</h4>
+  <table class="doc-table">
+    <tr><th>命令</th><th>说明</th></tr>
+    <tr><td><code>/tools</code></td><td>管理工具集</td></tr>
+    <tr><td><code>/toolsets</code></td><td>列出工具集</td></tr>
+    <tr><td><code>/skill &lt;name&gt;</code></td><td>加载指定 Skill</td></tr>
+    <tr><td><code>/skills</code></td><td>搜索/安装 Skills</td></tr>
+    <tr><td><code>/reload-skills</code></td><td>重新扫描技能目录</td></tr>
+    <tr><td><code>/reload</code></td><td>重新加载 .env 环境变量</td></tr>
+    <tr><td><code>/reload-mcp</code></td><td>重新加载 MCP 服务器</td></tr>
+    <tr><td><code>/curator [sub]</code></td><td>后台技能维护（status/run/pin/archive 等）</td></tr>
+    <tr><td><code>/kanban [sub]</code></td><td>多 Profile 协作看板</td></tr>
+    <tr><td><code>/cron</code></td><td>管理定时任务</td></tr>
+    <tr><td><code>/plugins</code></td><td>列出插件</td></tr>
+  </table>
+
+  <h4>信息与工具</h4>
+  <table class="doc-table">
+    <tr><th>命令</th><th>说明</th></tr>
+    <tr><td><code>/save</code></td><td>保存对话到文件</td></tr>
+    <tr><td><code>/copy [N]</code></td><td>复制最后的回复到剪贴板</td></tr>
+    <tr><td><code>/paste</code></td><td>粘贴剪贴板图片</td></tr>
+    <tr><td><code>/image</code></td><td>附加本地图像文件</td></tr>
+    <tr><td><code>/browser</code></td><td>打开 CDP 浏览器连接</td></tr>
+    <tr><td><code>/fast</code></td><td>切换优先/快速处理</td></tr>
+    <tr><td><code>/history</code></td><td>显示对话历史</td></tr>
+    <tr><td><code>/usage</code></td><td>Token 使用量</td></tr>
+    <tr><td><code>/insights [days]</code></td><td>用量分析</td></tr>
+    <tr><td><code>/profile</code></td><td>活跃 Profile 信息</td></tr>
+    <tr><td><code>/debug</code></td><td>上传调试报告并获取分享链接</td></tr>
+    <tr><td><code>/help</code></td><td>显示所有可用命令</td></tr>
+    <tr><td><code>/quit</code> (<code>/exit</code>, <code>/q</code>)</td><td>退出</td></tr>
   </table>
 
   <h3>工作目录</h3>
@@ -777,7 +834,8 @@ DISCORD_BOT_TOKEN=MTxxxxxxxxxx.xxxxxx.xxxxxxxxxxxxx
           <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> mcp list           <span class="comment"># 列出已配置的服务器</span>
 <span class="cmd">hermes</span> mcp test <span class="flag">&lt;name&gt;</span>    <span class="comment"># 测试连接</span>
 <span class="cmd">hermes</span> mcp configure <span class="flag">&lt;name&gt;</span> <span class="comment"># 选择启用的工具</span>
-<span class="cmd">hermes</span> mcp remove <span class="flag">&lt;name&gt;</span>   <span class="comment"># 移除服务器</span></div>
+<span class="cmd">hermes</span> mcp remove <span class="flag">&lt;name&gt;</span>   <span class="comment"># 移除服务器</span>
+<span class="cmd">hermes</span> mcp serve           <span class="comment"># 将 Hermes 本身作为 MCP Server 运行</span></div>
         </div>
       </div>
     </div>
@@ -929,6 +987,108 @@ DISCORD_BOT_TOKEN=MTxxxxxxxxxx.xxxxxx.xxxxxxxxxxxxx
     </div>
 
   </div><!-- /gen-categories -->
+
+    <!-- 新增：Kanban 协作 -->
+    <div class="gen-category" data-cat="Kanban 协作">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">📋</span>
+        <span>Kanban 协作看板</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'kanban-init')">
+            <h4>初始化看板</h4>
+            <p>创建多 Profile 协作看板</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'kanban-manage')">
+            <h4>管理任务</h4>
+            <p>创建、分配、完成任务</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-kanban-init">
+          <h4>初始化看板</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> kanban init           <span class="comment"># 初始化看板</span>
+<span class="cmd">hermes</span> kanban stats           <span class="comment"># 查看看板统计</span></div>
+          <div class="info-box">Kanban 是多 Profile / 多 Agent 协作的工作队列系统。每个 Profile 可以独立领取和处理任务，适合复杂的多 Agent 工作流。</div>
+        </div>
+        <div class="scenario-result" id="result-kanban-manage">
+          <h4>管理任务</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> kanban create         <span class="comment"># 创建任务</span>
+<span class="cmd">hermes</span> kanban list            <span class="comment"># 列出任务</span>
+<span class="cmd">hermes</span> kanban assign <span class="flag">&lt;id&gt;</span> <span class="flag">&lt;profile&gt;</span> <span class="comment"># 分配任务</span>
+<span class="cmd">hermes</span> kanban complete <span class="flag">&lt;id&gt;</span>  <span class="comment"># 完成任务</span>
+<span class="cmd">hermes</span> kanban block <span class="flag">&lt;id&gt;</span>     <span class="comment"># 阻塞任务</span>
+<span class="cmd">hermes</span> kanban comment <span class="flag">&lt;id&gt;</span>   <span class="comment"># 添加评论</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增：Web UI 与桌面应用 -->
+    <div class="gen-category" data-cat="Web UI 与桌面应用">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">🖥️</span>
+        <span>Web UI 与桌面应用</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'dashboard')">
+            <h4>Web Dashboard</h4>
+            <p>浏览器中管理 Hermes</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'desktop-app')">
+            <h4>桌面应用</h4>
+            <p>原生桌面 GUI</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-dashboard">
+          <h4>Web Dashboard</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> dashboard            <span class="comment"># 启动 Web UI 仪表板</span></div>
+          <div class="info-box">启动后在浏览器中打开，可以管理会话、配置、技能等。</div>
+        </div>
+        <div class="scenario-result" id="result-desktop-app">
+          <h4>桌面应用</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> desktop              <span class="comment"># 构建并启动原生桌面应用</span>
+<span class="comment"># 或使用别名</span>
+<span class="cmd">hermes</span> gui</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增：日志与调试 -->
+    <div class="gen-category" data-cat="日志与调试">
+      <div class="gen-category-header" onclick="toggleCat(this)">
+        <span class="arrow">▶</span>
+        <span class="cat-icon">🔍</span>
+        <span>日志与调试</span>
+      </div>
+      <div class="gen-category-body">
+        <div class="scenario-grid">
+          <div class="scenario-btn" onclick="showScenario(this, 'view-logs')">
+            <h4>查看日志</h4>
+            <p>查看和过滤 Hermes 日志</p>
+          </div>
+          <div class="scenario-btn" onclick="showScenario(this, 'debug-info')">
+            <h4>调试信息</h4>
+            <p>上传调试报告、系统审计</p>
+          </div>
+        </div>
+        <div class="scenario-result" id="result-view-logs">
+          <h4>查看日志</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> logs                 <span class="comment"># 查看和过滤日志</span>
+<span class="cmd">hermes</span> prompt-size          <span class="comment"># 查看 system prompt 字节分布</span></div>
+        </div>
+        <div class="scenario-result" id="result-debug-info">
+          <h4>调试信息</h4>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="cmd">hermes</span> debug                <span class="comment"># 上传调试报告（系统信息 + 日志）</span>
+<span class="cmd">hermes</span> dump                 <span class="comment"># 转储设置摘要</span>
+<span class="cmd">hermes</span> security             <span class="comment"># 供应链安全审计</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /gen-categories -->
 </section>
 
 <!-- ==================== SKILLS ==================== -->
@@ -1052,15 +1212,22 @@ tags: [tag1, tag2]
     <tr><th>提供商</th><th>环境变量</th><th>认证方式</th></tr>
     <tr><td>OpenRouter</td><td><code>OPENROUTER_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>Anthropic</td><td><code>ANTHROPIC_API_KEY</code></td><td>API Key</td></tr>
-    <tr><td>Google Gemini</td><td><code>GOOGLE_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>Google Gemini</td><td><code>GOOGLE_API_KEY</code> / <code>GEMINI_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>DeepSeek</td><td><code>DEEPSEEK_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>xAI / Grok</td><td><code>XAI_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>Hugging Face</td><td><code>HF_TOKEN</code></td><td>Token</td></tr>
+    <tr><td>Z.AI / GLM</td><td><code>GLM_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>MiniMax</td><td><code>MINIMAX_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>MiniMax CN</td><td><code>MINIMAX_CN_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>Kimi / Moonshot</td><td><code>KIMI_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>阿里 / DashScope</td><td><code>DASHSCOPE_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>小米 MiMo</td><td><code>XIAOMI_API_KEY</code></td><td>API Key</td></tr>
+    <tr><td>Kilo Code</td><td><code>KILOCODE_API_KEY</code></td><td>API Key</td></tr>
     <tr><td>Nous Portal</td><td>—</td><td>OAuth</td></tr>
+    <tr><td>OpenAI Codex</td><td>—</td><td>OAuth</td></tr>
     <tr><td>GitHub Copilot</td><td><code>COPILOT_GITHUB_TOKEN</code></td><td>Token</td></tr>
+    <tr><td>通义千问</td><td>—</td><td>OAuth（<code>hermes auth add qwen-oauth</code>）</td></tr>
+    <tr><td>自定义端点</td><td>config.yaml 中设置 <code>model.base_url</code></td><td>配置</td></tr>
   </table>
   <p>完整列表见 <a href="https://hermes-agent.nousresearch.com/docs/integrations/providers" target="_blank">官方文档</a>。</p>
 </section>
@@ -1072,16 +1239,20 @@ tags: [tag1, tag2]
   <h3>支持的平台</h3>
   <table class="doc-table">
     <tr><th>平台</th><th>说明</th></tr>
-    <tr><td>Telegram</td><td>Bot 模式，支持群组和私聊</td></tr>
+    <tr><td>Telegram</td><td>Bot 模式，支持群组、私聊和 Topic 会话</td></tr>
     <tr><td>Discord</td><td>Bot 模式，需开启 Message Content Intent</td></tr>
     <tr><td>Slack</td><td>App 模式，需订阅 message.channels 事件</td></tr>
-    <tr><td>飞书（Feishu/Lark）</td><td>应用机器人</td></tr>
-    <tr><td>微信（Weixin/WeCom）</td><td>企业微信 / 微信</td></tr>
+    <tr><td>飞书（Feishu/Lark）</td><td>应用机器人，支持交互式卡片</td></tr>
+    <tr><td>企业微信（WeCom）</td><td>企业微信应用</td></tr>
+    <tr><td>微信（Weixin）</td><td>通过 iLink Bot API 连接个人微信</td></tr>
     <tr><td>钉钉（DingTalk）</td><td>群机器人</td></tr>
     <tr><td>WhatsApp</td><td>通过 WhatsApp Business API</td></tr>
     <tr><td>Signal</td><td>signal-cli 集成</td></tr>
     <tr><td>Matrix</td><td>Matrix 协议</td></tr>
+    <tr><td>Mattermost</td><td>Mattermost 集成</td></tr>
     <tr><td>Email</td><td>邮件收发</td></tr>
+    <tr><td>SMS</td><td>短信收发</td></tr>
+    <tr><td>BlueBubbles</td><td>iMessage 集成（macOS）</td></tr>
     <tr><td>Home Assistant</td><td>智能家居控制</td></tr>
     <tr><td>Webhook</td><td>自定义 HTTP 回调</td></tr>
     <tr><td>API Server</td><td>OpenAI 兼容 API（可接 Open WebUI）</td></tr>
@@ -1154,6 +1325,7 @@ tags: [tag1, tag2]
     <tr><td>Local faster-whisper</td><td>免费，本地运行</td><td>无需（<code>pip install faster-whisper</code>）</td></tr>
     <tr><td>Groq Whisper</td><td>免费额度</td><td><code>GROQ_API_KEY</code></td></tr>
     <tr><td>OpenAI Whisper</td><td>付费</td><td><code>VOICE_TOOLS_OPENAI_KEY</code></td></tr>
+    <tr><td>Mistral Voxtral</td><td>付费</td><td><code>MISTRAL_API_KEY</code></td></tr>
   </table>
 
   <h4>文字转语音（TTS）</h4>
@@ -1162,6 +1334,9 @@ tags: [tag1, tag2]
     <tr><td>Edge TTS</td><td>免费（默认）</td><td>无需</td></tr>
     <tr><td>ElevenLabs</td><td>免费额度</td><td><code>ELEVENLABS_API_KEY</code></td></tr>
     <tr><td>OpenAI</td><td>付费</td><td><code>VOICE_TOOLS_OPENAI_KEY</code></td></tr>
+    <tr><td>MiniMax</td><td>付费</td><td><code>MINIMAX_API_KEY</code></td></tr>
+    <tr><td>Mistral (Voxtral)</td><td>付费</td><td><code>MISTRAL_API_KEY</code></td></tr>
+    <tr><td>NeuTTS（本地）</td><td>免费（<code>pip install neutts[all]</code> + <code>espeak-ng</code>）</td><td>无需</td></tr>
   </table>
   <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button><span class="comment"># 对话中切换语音模式</span>
 /voice on        <span class="comment"># 语音对语音</span>
@@ -1186,14 +1361,40 @@ tags: [tag1, tag2]
 <span class="cmd">hermes</span> backup              <span class="comment"># 备份到 zip</span>
 <span class="cmd">hermes</span> import <span class="flag">&lt;file&gt;</span>       <span class="comment"># 从 zip 恢复</span>
 
+<span class="comment"># 查看日志</span>
+<span class="cmd">hermes</span> logs                 <span class="comment"># 查看和过滤日志</span>
+
+<span class="comment"># 系统 prompt 分析</span>
+<span class="cmd">hermes</span> prompt-size          <span class="comment"># 查看 system prompt + tool schema 的字节分布</span>
+
+<span class="comment"># Web UI 和桌面应用</span>
+<span class="cmd">hermes</span> dashboard            <span class="comment"># 启动 Web UI 仪表板</span>
+<span class="cmd">hermes</span> desktop              <span class="comment"># 构建并启动原生桌面应用</span>
+
+<span class="comment"># Skill Bundles（技能包）</span>
+<span class="cmd">hermes</span> bundles list          <span class="comment"># 列出技能包</span>
+<span class="cmd">hermes</span> bundles create <span class="flag">&lt;name&gt;</span> <span class="comment"># 创建技能包（多个 Skill 的别名）</span>
+
+<span class="comment"># Kanban 协作看板</span>
+<span class="cmd">hermes</span> kanban init           <span class="comment"># 初始化看板</span>
+<span class="cmd">hermes</span> kanban create         <span class="comment"># 创建任务</span>
+<span class="cmd">hermes</span> kanban list           <span class="comment"># 列出任务</span>
+
 <span class="comment"># Shell 补全</span>
 <span class="cmd">hermes</span> completion bash     <span class="comment"># Bash 补全</span>
 <span class="cmd">hermes</span> completion zsh      <span class="comment"># Zsh 补全</span>
+<span class="cmd">hermes</span> completion fish     <span class="comment"># Fish 补全</span>
 
 <span class="comment"># 插件管理</span>
 <span class="cmd">hermes</span> plugins list
 <span class="cmd">hermes</span> plugins install <span class="flag">&lt;name&gt;</span>
-<span class="cmd">hermes</span> plugins remove <span class="flag">&lt;name&gt;</span></div>
+<span class="cmd">hermes</span> plugins remove <span class="flag">&lt;name&gt;</span>
+
+<span class="comment"># 供应链安全审计</span>
+<span class="cmd">hermes</span> security             <span class="comment"># 审计 venv、插件和 MCP 服务器的依赖</span>
+
+<span class="comment"># 卸载</span>
+<span class="cmd">hermes</span> uninstall</div>
 </section>
 
 <!-- ==================== FAQ ==================== -->
